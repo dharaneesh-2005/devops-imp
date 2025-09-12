@@ -323,19 +323,49 @@ jobs:
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: task-definition.json
-        container-name: $CONTAINER_NAME
-        image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
+      run: |
+        echo "Updating container image in task definition..."
+        echo "Container name: $CONTAINER_NAME"
+        echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
+        
+        # Update the image in the task definition using jq
+        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" '
+          .containerDefinitions = [
+            .containerDefinitions[] | 
+            if .name == $containerName then 
+              .image = $imageUri 
+            else 
+              . 
+            end
+          ]
+        ' task-definition.json > updated-task-definition.json
+        
+        echo "Updated task definition:"
+        cat updated-task-definition.json | jq '.containerDefinitions[] | {name: .name, image: .image}'
+        
+        # Set output for next step
+        echo "task-definition-json=$(cat updated-task-definition.json)" >> $GITHUB_OUTPUT
 
     - name: Deploy Amazon ECS task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: $ECS_SERVICE
-        cluster: $ECS_CLUSTER
-        wait-for-service-stability: true
+      run: |
+        echo "Deploying updated task definition to ECS..."
+        
+        # Register the new task definition
+        NEW_TASK_DEF=$(aws ecs register-task-definition --cli-input-json file://updated-task-definition.json --query 'taskDefinition.taskDefinitionArn' --output text)
+        echo "New task definition ARN: $NEW_TASK_DEF"
+        
+        # Update the service with the new task definition
+        aws ecs update-service \
+          --cluster $ECS_CLUSTER \
+          --service $ECS_SERVICE \
+          --task-definition $NEW_TASK_DEF
+        
+        echo "Waiting for service to stabilize..."
+        aws ecs wait services-stable \
+          --cluster $ECS_CLUSTER \
+          --services $ECS_SERVICE
+        
+        echo "Service updated successfully!"
 
   # Job 6: Deploy to Production
   deploy-prod:
@@ -383,19 +413,49 @@ jobs:
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
-      uses: aws-actions/amazon-ecs-render-task-definition@v1
-      with:
-        task-definition: task-definition.json
-        container-name: $CONTAINER_NAME
-        image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
+      run: |
+        echo "Updating container image in task definition..."
+        echo "Container name: $CONTAINER_NAME"
+        echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
+        
+        # Update the image in the task definition using jq
+        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" '
+          .containerDefinitions = [
+            .containerDefinitions[] | 
+            if .name == $containerName then 
+              .image = $imageUri 
+            else 
+              . 
+            end
+          ]
+        ' task-definition.json > updated-task-definition.json
+        
+        echo "Updated task definition:"
+        cat updated-task-definition.json | jq '.containerDefinitions[] | {name: .name, image: .image}'
+        
+        # Set output for next step
+        echo "task-definition-json=$(cat updated-task-definition.json)" >> $GITHUB_OUTPUT
 
     - name: Deploy Amazon ECS task definition
-      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: $ECS_SERVICE
-        cluster: $ECS_CLUSTER
-        wait-for-service-stability: true
+      run: |
+        echo "Deploying updated task definition to ECS..."
+        
+        # Register the new task definition
+        NEW_TASK_DEF=$(aws ecs register-task-definition --cli-input-json file://updated-task-definition.json --query 'taskDefinition.taskDefinitionArn' --output text)
+        echo "New task definition ARN: $NEW_TASK_DEF"
+        
+        # Update the service with the new task definition
+        aws ecs update-service \
+          --cluster $ECS_CLUSTER \
+          --service $ECS_SERVICE \
+          --task-definition $NEW_TASK_DEF
+        
+        echo "Waiting for service to stabilize..."
+        aws ecs wait services-stable \
+          --cluster $ECS_CLUSTER \
+          --services $ECS_SERVICE
+        
+        echo "Service updated successfully!"
 
     - name: Run smoke tests
       run: |
