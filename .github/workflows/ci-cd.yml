@@ -328,23 +328,13 @@ jobs:
         echo "Container name: $CONTAINER_NAME"
         echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
         
-        # Update the image in the task definition using jq
-        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" '
-          .containerDefinitions = [
-            .containerDefinitions[] | 
-            if .name == $containerName then 
-              .image = $imageUri 
-            else 
-              . 
-            end
-          ]
-        ' task-definition.json > updated-task-definition.json
+        # Update the image in the task definition using jq with simpler syntax
+        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" \
+          '.containerDefinitions[0].image = $imageUri' \
+          task-definition.json > updated-task-definition.json
         
         echo "Updated task definition:"
-        cat updated-task-definition.json | jq '.containerDefinitions[] | {name: .name, image: .image}'
-        
-        # Set output for next step
-        echo "task-definition-json=$(cat updated-task-definition.json)" >> $GITHUB_OUTPUT
+        cat updated-task-definition.json | jq '.containerDefinitions[0] | {name: .name, image: .image}'
 
     - name: Deploy Amazon ECS task definition
       run: |
@@ -418,23 +408,13 @@ jobs:
         echo "Container name: $CONTAINER_NAME"
         echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
         
-        # Update the image in the task definition using jq
-        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" '
-          .containerDefinitions = [
-            .containerDefinitions[] | 
-            if .name == $containerName then 
-              .image = $imageUri 
-            else 
-              . 
-            end
-          ]
-        ' task-definition.json > updated-task-definition.json
+        # Update the image in the task definition using jq with simpler syntax
+        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" \
+          '.containerDefinitions[0].image = $imageUri' \
+          task-definition.json > updated-task-definition.json
         
         echo "Updated task definition:"
-        cat updated-task-definition.json | jq '.containerDefinitions[] | {name: .name, image: .image}'
-        
-        # Set output for next step
-        echo "task-definition-json=$(cat updated-task-definition.json)" >> $GITHUB_OUTPUT
+        cat updated-task-definition.json | jq '.containerDefinitions[0] | {name: .name, image: .image}'
 
     - name: Deploy Amazon ECS task definition
       run: |
