@@ -12,7 +12,8 @@
         "elasticloadbalancing:*",
         "s3:*",
         "dynamodb:*",
-        "sts:GetCallerIdentity"
+        "sts:GetCallerIdentity",
+        "sts:TagSession"
       ],
       "Resource": "*"
     }
