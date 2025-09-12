@@ -326,10 +326,10 @@ jobs:
       run: |
         echo "Updating container image in task definition..."
         echo "Container name: $CONTAINER_NAME"
-        echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
+        echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:latest"
         
         # Update the image in the task definition using jq with simpler syntax
-        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" \
+        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
           '.containerDefinitions[0].image = $imageUri' \
           task-definition.json > updated-task-definition.json
         
@@ -353,7 +353,9 @@ jobs:
         echo "Waiting for service to stabilize..."
         aws ecs wait services-stable \
           --cluster $ECS_CLUSTER \
-          --services $ECS_SERVICE
+          --services $ECS_SERVICE \
+          --cli-read-timeout 300 \
+          --cli-connect-timeout 60
         
         echo "Service updated successfully!"
 
@@ -406,10 +408,10 @@ jobs:
       run: |
         echo "Updating container image in task definition..."
         echo "Container name: $CONTAINER_NAME"
-        echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}"
+        echo "New image: $ECR_REGISTRY/$ECR_REPOSITORY:latest"
         
         # Update the image in the task definition using jq with simpler syntax
-        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}" \
+        jq --arg containerName "$CONTAINER_NAME" --arg imageUri "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
           '.containerDefinitions[0].image = $imageUri' \
           task-definition.json > updated-task-definition.json
         
@@ -433,7 +435,9 @@ jobs:
         echo "Waiting for service to stabilize..."
         aws ecs wait services-stable \
           --cluster $ECS_CLUSTER \
-          --services $ECS_SERVICE
+          --services $ECS_SERVICE \
+          --cli-read-timeout 300 \
+          --cli-connect-timeout 60
         
         echo "Service updated successfully!"
 
