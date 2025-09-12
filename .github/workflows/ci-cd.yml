@@ -76,6 +76,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'pull_request'
+    permissions:
+      id-token: write
+      contents: read
     
     steps:
     - name: Checkout code
@@ -245,6 +248,9 @@ jobs:
     needs: [build-and-test, output-verification]
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+    permissions:
+      id-token: write
+      contents: read
     
     steps:
     - name: Checkout code
@@ -278,6 +284,9 @@ jobs:
     needs: [build-and-test, output-verification, terraform-apply]
     if: github.ref == 'refs/heads/develop'
     environment: development
+    permissions:
+      id-token: write
+      contents: read
     
     steps:
     - name: Checkout code
@@ -330,6 +339,9 @@ jobs:
     needs: [build-and-test, output-verification, terraform-apply]
     if: github.ref == 'refs/heads/main'
     environment: production
+    permissions:
+      id-token: write
+      contents: read
     
     steps:
     - name: Checkout code
