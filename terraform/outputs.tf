@@ -1,61 +1,72 @@
 # VPC Outputs
 output "vpc_id" {
   description = "ID of the VPC"
-  value       = aws_vpc.main.id
+  value       = module.vpc.vpc_id
 }
 
 output "vpc_cidr_block" {
   description = "CIDR block of the VPC"
-  value       = aws_vpc.main.cidr_block
+  value       = module.vpc.vpc_cidr_block
 }
 
 # Subnet Outputs
 output "public_subnet_ids" {
   description = "IDs of the public subnets"
-  value       = aws_subnet.public[*].id
+  value       = module.vpc.public_subnet_ids
 }
 
 output "private_subnet_ids" {
   description = "IDs of the private subnets"
-  value       = aws_subnet.private[*].id
+  value       = module.vpc.private_subnet_ids
+}
+
+# ALB Outputs
+output "alb_dns_name" {
+  description = "DNS name of the load balancer"
+  value       = module.alb.alb_dns_name
+}
+
+output "alb_zone_id" {
+  description = "Zone ID of the load balancer"
+  value       = module.alb.alb_zone_id
 }
 
 # ECR Outputs
 output "ecr_repository_url" {
   description = "URL of the ECR repository"
-  value       = aws_ecr_repository.app.repository_url
+  value       = module.ecs.ecr_repository_url
 }
 
 output "ecr_repository_name" {
   description = "Name of the ECR repository"
-  value       = aws_ecr_repository.app.name
+  value       = module.ecs.ecr_repository_name
 }
 
 # ECS Outputs
 output "ecs_cluster_id" {
   description = "ID of the ECS cluster"
-  value       = aws_ecs_cluster.main.id
+  value       = module.ecs.ecs_cluster_id
 }
 
 output "ecs_cluster_name" {
   description = "Name of the ECS cluster"
-  value       = aws_ecs_cluster.main.name
+  value       = module.ecs.ecs_cluster_name
 }
 
 output "ecs_cluster_arn" {
   description = "ARN of the ECS cluster"
-  value       = aws_ecs_cluster.main.arn
+  value       = module.ecs.ecs_cluster_arn
 }
 
 # Task Definition Outputs
 output "task_definition_arn" {
   description = "ARN of the ECS task definition"
-  value       = aws_ecs_task_definition.app.arn
+  value       = module.ecs.task_definition_arn
 }
 
-output "task_definition_family" {
-  description = "Family of the ECS task definition"
-  value       = aws_ecs_task_definition.app.family
+output "ecs_service_name" {
+  description = "Name of the ECS service"
+  value       = module.ecs.ecs_service_name
 }
 
 # IAM Role Outputs
