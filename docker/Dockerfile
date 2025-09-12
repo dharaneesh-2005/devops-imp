@@ -27,6 +27,9 @@ COPY --from=builder /app/node_modules ./node_modules
 # Copy application code
 COPY --chown=nodejs:nodejs . .
 
+# Ensure public directory exists and has correct permissions
+RUN ls -la /app/ && ls -la /app/public/ || echo "Public directory not found"
+
 # Switch to non-root user
 USER nodejs
 
