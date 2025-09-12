@@ -47,8 +47,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        cd src/app
-        docker build -f ../../docker/Dockerfile -t $ECR_REPOSITORY:$GITHUB_SHA .
+        docker build -f docker/Dockerfile -t $ECR_REPOSITORY:$GITHUB_SHA src/app
 
     - name: Test Docker image locally
       run: |
@@ -61,6 +60,13 @@ jobs:
         echo "Testing main endpoint..."
         MAIN_RESPONSE=$(curl -s http://localhost:3000)
         echo "Main response: $MAIN_RESPONSE"
+        # Verify HTML content is served
+        if echo "$MAIN_RESPONSE" | grep -q "DevOps CI/CD Pipeline"; then
+          echo "✅ Main endpoint serves HTML dashboard"
+        else
+          echo "❌ Main endpoint does not serve HTML dashboard"
+          exit 1
+        fi
         curl -f http://localhost:3000 || exit 1
         echo "Testing API endpoint..."
         API_RESPONSE=$(curl -s http://localhost:3000/api)
@@ -214,11 +220,12 @@ jobs:
         MAIN_RESPONSE=$(curl -s http://localhost:3000)
         echo "Main response: $MAIN_RESPONSE"
         
-        # Verify main response contains expected content (HTML or JSON)
-        if echo "$MAIN_RESPONSE" | grep -q "DevOps CI/CD Pipeline" || echo "$MAIN_RESPONSE" | grep -q '"message":"Welcome to DevOps Sample App"'; then
-          echo "✅ Main endpoint: PASSED"
+        # Verify main response contains expected HTML content
+        if echo "$MAIN_RESPONSE" | grep -q "DevOps CI/CD Pipeline"; then
+          echo "✅ Main endpoint (HTML): PASSED"
         else
-          echo "❌ Main endpoint: FAILED"
+          echo "❌ Main endpoint (HTML): FAILED - Expected HTML dashboard"
+          echo "Response: $MAIN_RESPONSE"
           exit 1
         fi
         
@@ -306,8 +313,7 @@ jobs:
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        cd src/app
-        docker build -f ../../docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -f docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/app
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:dev-latest
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:dev-latest
@@ -388,8 +394,7 @@ jobs:
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        cd src/app
-        docker build -f ../../docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -f docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/app
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
