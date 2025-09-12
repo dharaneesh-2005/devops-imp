@@ -314,7 +314,12 @@ jobs:
 
     - name: Download task definition
       run: |
-        aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION --query taskDefinition > task-definition.json
+        aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION --query 'taskDefinition' > task-definition.json
+        # Remove fields that shouldn't be in new task definition
+        jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)' task-definition.json > task-definition-clean.json
+        mv task-definition-clean.json task-definition.json
+        echo "Task definition downloaded and cleaned:"
+        cat task-definition.json | jq '.containerDefinitions[].name'
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
@@ -369,7 +374,12 @@ jobs:
 
     - name: Download task definition
       run: |
-        aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION --query taskDefinition > task-definition.json
+        aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION --query 'taskDefinition' > task-definition.json
+        # Remove fields that shouldn't be in new task definition
+        jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)' task-definition.json > task-definition-clean.json
+        mv task-definition-clean.json task-definition.json
+        echo "Task definition downloaded and cleaned:"
+        cat task-definition.json | jq '.containerDefinitions[].name'
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
