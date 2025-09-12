@@ -351,25 +351,13 @@ jobs:
           --task-definition $NEW_TASK_DEF
         
         echo "Waiting for service to stabilize..."
-        # Wait for service to stabilize with shorter timeout
-        timeout 300 aws ecs wait services-stable \
+        aws ecs wait services-stable \
           --cluster $ECS_CLUSTER \
           --services $ECS_SERVICE \
-          --cli-read-timeout 60 \
-          --cli-connect-timeout 30 || echo "Service stabilization timeout reached, but deployment may still be successful"
+          --cli-read-timeout 300 \
+          --cli-connect-timeout 60
         
-        # Check final service status
-        SERVICE_STATUS=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].status' --output text)
-        RUNNING_COUNT=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].runningCount' --output text)
-        
-        echo "Final service status: $SERVICE_STATUS"
-        echo "Running tasks: $RUNNING_COUNT"
-        
-        if [ "$SERVICE_STATUS" = "ACTIVE" ] && [ "$RUNNING_COUNT" -gt 0 ]; then
-          echo "Service updated successfully!"
-        else
-          echo "Service may still be stabilizing, but deployment was initiated"
-        fi
+        echo "Service updated successfully!"
 
   # Job 6: Deploy to Production
   deploy-prod:
@@ -445,25 +433,13 @@ jobs:
           --task-definition $NEW_TASK_DEF
         
         echo "Waiting for service to stabilize..."
-        # Wait for service to stabilize with shorter timeout
-        timeout 300 aws ecs wait services-stable \
+        aws ecs wait services-stable \
           --cluster $ECS_CLUSTER \
           --services $ECS_SERVICE \
-          --cli-read-timeout 60 \
-          --cli-connect-timeout 30 || echo "Service stabilization timeout reached, but deployment may still be successful"
+          --cli-read-timeout 300 \
+          --cli-connect-timeout 60
         
-        # Check final service status
-        SERVICE_STATUS=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].status' --output text)
-        RUNNING_COUNT=$(aws ecs describe-services --cluster $ECS_CLUSTER --services $ECS_SERVICE --query 'services[0].runningCount' --output text)
-        
-        echo "Final service status: $SERVICE_STATUS"
-        echo "Running tasks: $RUNNING_COUNT"
-        
-        if [ "$SERVICE_STATUS" = "ACTIVE" ] && [ "$RUNNING_COUNT" -gt 0 ]; then
-          echo "Service updated successfully!"
-        else
-          echo "Service may still be stabilizing, but deployment was initiated"
-        fi
+        echo "Service updated successfully!"
 
     - name: Run smoke tests
       run: |
