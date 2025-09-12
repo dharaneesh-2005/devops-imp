@@ -95,8 +95,6 @@ jobs:
       if: always() && success()
       with:
         sarif_file: 'trivy-results.sarif'
-      permissions:
-        security-events: write
 
   # Job 3: Output Verification Test
   output-verification:
