@@ -1,7 +1,15 @@
 const request = require('supertest');
-const app = require('../server');
+const { app, server } = require('../server');
 
 describe('Sample App API', () => {
+  // Close server after all tests
+  afterAll((done) => {
+    if (server) {
+      server.close(done);
+    } else {
+      done();
+    }
+  });
   test('GET / should return HTML dashboard', async () => {
     const response = await request(app)
       .get('/')
