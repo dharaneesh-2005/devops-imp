@@ -88,7 +88,7 @@ output "github_actions_role_arn" {
 # CloudWatch Outputs
 output "cloudwatch_log_group_name" {
   description = "Name of the CloudWatch log group"
-  value       = aws_cloudwatch_log_group.app.name
+  value       = module.ecs.cloudwatch_log_group_name
 }
 
 # General Outputs

@@ -67,3 +67,10 @@ variable "app_image_tag" {
   type        = string
   default     = "latest"
 }
+
+# GitHub Variables
+variable "github_repo" {
+  description = "GitHub repository in format owner/repo"
+  type        = string
+  default     = "dharaneesh-2005/devops-imp"
+}
