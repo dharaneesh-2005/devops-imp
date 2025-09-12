@@ -54,12 +54,18 @@ jobs:
         docker run -d -p 3000:3000 --name test-container $ECR_REPOSITORY:$GITHUB_SHA
         sleep 15
         echo "Testing health endpoint..."
+        HEALTH_RESPONSE=$(curl -s http://localhost:3000/health)
+        echo "Health response: $HEALTH_RESPONSE"
         curl -f http://localhost:3000/health || exit 1
         echo "Testing main endpoint..."
+        MAIN_RESPONSE=$(curl -s http://localhost:3000)
+        echo "Main response: $MAIN_RESPONSE"
         curl -f http://localhost:3000 || exit 1
         echo "Testing API endpoint..."
+        API_RESPONSE=$(curl -s http://localhost:3000/api)
+        echo "API response: $API_RESPONSE"
         curl -f http://localhost:3000/api || exit 1
-        echo "All tests passed!"
+        echo "All Docker tests passed!"
         docker stop test-container
         docker rm test-container
 
@@ -87,11 +93,88 @@ jobs:
       with:
         sarif_file: 'trivy-results.sarif'
 
-  # Job 3: Deploy to Development
+  # Job 3: Output Verification Test
+  output-verification:
+    name: Output Verification Test
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        cd src/app
+        npm install
+
+    - name: Build Docker image for verification
+      run: |
+        cd src/app
+        docker build -f ../../docker/Dockerfile -t verification-app .
+
+    - name: Test and verify output matches local
+      run: |
+        docker run -d -p 3000:3000 --name verification-container verification-app
+        sleep 15
+        
+        echo "=== VERIFYING OUTPUT MATCHES LOCAL ==="
+        
+        # Test health endpoint
+        echo "Testing health endpoint..."
+        HEALTH_RESPONSE=$(curl -s http://localhost:3000/health)
+        echo "Health response: $HEALTH_RESPONSE"
+        
+        # Verify health response contains expected fields
+        if echo "$HEALTH_RESPONSE" | grep -q '"status":"healthy"'; then
+          echo "✅ Health status: PASSED"
+        else
+          echo "❌ Health status: FAILED"
+          exit 1
+        fi
+        
+        # Test main endpoint
+        echo "Testing main endpoint..."
+        MAIN_RESPONSE=$(curl -s http://localhost:3000)
+        echo "Main response: $MAIN_RESPONSE"
+        
+        # Verify main response contains expected content
+        if echo "$MAIN_RESPONSE" | grep -q "DevOps CI/CD Pipeline"; then
+          echo "✅ Main endpoint: PASSED"
+        else
+          echo "❌ Main endpoint: FAILED"
+          exit 1
+        fi
+        
+        # Test API endpoint
+        echo "Testing API endpoint..."
+        API_RESPONSE=$(curl -s http://localhost:3000/api)
+        echo "API response: $API_RESPONSE"
+        
+        # Verify API response contains expected fields
+        if echo "$API_RESPONSE" | grep -q '"message":"API is working!"'; then
+          echo "✅ API endpoint: PASSED"
+        else
+          echo "❌ API endpoint: FAILED"
+          exit 1
+        fi
+        
+        echo "=== ALL OUTPUT VERIFICATION TESTS PASSED ==="
+        echo "✅ Output matches local environment"
+        
+        docker stop verification-container
+        docker rm verification-container
+
+  # Job 4: Deploy to Development
   deploy-dev:
     name: Deploy to Development
     runs-on: ubuntu-latest
-    needs: [build-and-test, security-scan]
+    needs: [build-and-test, security-scan, output-verification]
     if: github.ref == 'refs/heads/develop'
     environment: development
     
@@ -141,11 +224,11 @@ jobs:
         cluster: $ECS_CLUSTER
         wait-for-service-stability: true
 
-  # Job 4: Deploy to Production
+  # Job 5: Deploy to Production
   deploy-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build-and-test, security-scan]
+    needs: [build-and-test, security-scan, output-verification]
     if: github.ref == 'refs/heads/main'
     environment: production
     
