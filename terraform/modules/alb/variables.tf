@@ -18,3 +18,4 @@ variable "app_port" {
   type        = number
   default     = 3000
 }
+

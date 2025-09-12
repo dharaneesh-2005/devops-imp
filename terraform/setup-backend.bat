@@ -59,3 +59,4 @@ echo    terraform plan
 echo    terraform apply
 
 pause
+

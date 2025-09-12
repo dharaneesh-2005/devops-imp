@@ -85,3 +85,4 @@ resource "aws_security_group" "alb" {
     Name = "${var.project_name}-alb-sg"
   }
 }
+

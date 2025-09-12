@@ -58,3 +58,4 @@ terraform init -backend-config=terraform/backend-config.hcl
 echo "🎉 Setup complete! You can now run:"
 echo "   terraform plan"
 echo "   terraform apply"
+

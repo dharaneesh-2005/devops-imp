@@ -1,5 +1,6 @@
-# This file creates the S3 bucket and DynamoDB table for Terraform state management
-# Run this first to set up the backend infrastructure
+# Backend Setup Configuration
+# This file should be run separately to create the S3 bucket and DynamoDB table
+# for Terraform state management before running the main configuration
 
 terraform {
   required_version = ">= 1.0"
@@ -7,6 +8,10 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
     }
   }
 }
@@ -21,6 +26,19 @@ provider "aws" {
       ManagedBy   = "Terraform"
     }
   }
+}
+
+# Variables for backend setup
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-west-2"
+}
+
+variable "project_name" {
+  description = "Name of the project"
+  type        = string
+  default     = "devops-project"
 }
 
 # S3 Bucket for Terraform State

@@ -1,17 +1,4 @@
-# ECS Module
-# ECS Cluster
-resource "aws_ecs_cluster" "main" {
-  name = "${var.project_name}-cluster"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
-
-  tags = {
-    Name = "${var.project_name}-ecs-cluster"
-  }
-}
+# ECS Module - Main Configuration
 
 # ECR Repository
 resource "aws_ecr_repository" "app" {
@@ -23,32 +10,49 @@ resource "aws_ecr_repository" "app" {
   }
 
   tags = {
-    Name = "${var.project_name}-ecr"
+    Name        = "${var.project_name}-ecr"
+    Environment = var.environment
+  }
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "main" {
+  name = "${var.project_name}-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
+  tags = {
+    Name        = "${var.project_name}-cluster"
+    Environment = var.environment
   }
 }
 
 # ECS Task Definition
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.project_name}-app"
+  family                   = "${var.project_name}-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.task_cpu
   memory                   = var.task_memory
   execution_role_arn       = var.ecs_execution_role_arn
-  task_role_arn            = var.ecs_task_role_arn
+  task_role_arn           = var.ecs_task_role_arn
 
   container_definitions = jsonencode([
     {
-      name  = "${var.project_name}-app"
+      name  = "${var.project_name}-container"
       image = "${aws_ecr_repository.app.repository_url}:latest"
       
       portMappings = [
         {
           containerPort = var.app_port
+          hostPort      = var.app_port
           protocol      = "tcp"
         }
       ]
-      
+
       environment = [
         {
           name  = "NODE_ENV"
@@ -59,28 +63,34 @@ resource "aws_ecs_task_definition" "app" {
           value = tostring(var.app_port)
         }
       ]
-      
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.app.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "ecs"
+          awslogs-group         = aws_cloudwatch_log_group.app.name
+          awslogs-region        = var.aws_region
+          awslogs-stream-prefix = "ecs"
         }
       }
-      
+
       healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${var.app_port}/health || exit 1"]
+        command = [
+          "CMD-SHELL",
+          "curl -f http://localhost:${var.app_port}/health || exit 1"
+        ]
         interval    = 30
         timeout     = 5
         retries     = 3
         startPeriod = 60
       }
+
+      essential = true
     }
   ])
 
   tags = {
-    Name = "${var.project_name}-task-definition"
+    Name        = "${var.project_name}-task-definition"
+    Environment = var.environment
   }
 }
 
@@ -94,53 +104,62 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.ecs.id]
+    security_groups  = [aws_security_group.ecs_tasks.id]
     assign_public_ip = false
   }
 
   load_balancer {
     target_group_arn = var.target_group_arn
-    container_name   = "${var.project_name}-app"
+    container_name   = "${var.project_name}-container"
     container_port   = var.app_port
   }
 
-  depends_on = [var.target_group_arn]
+  depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role]
 
   tags = {
-    Name = "${var.project_name}-ecs-service"
+    Name        = "${var.project_name}-service"
+    Environment = var.environment
   }
 }
 
-# Security Group for ECS
-resource "aws_security_group" "ecs" {
-  name_prefix = "${var.project_name}-ecs-"
+# Security Group for ECS Tasks
+resource "aws_security_group" "ecs_tasks" {
+  name_prefix = "${var.project_name}-ecs-tasks-"
   vpc_id      = var.vpc_id
 
   ingress {
+    protocol    = "tcp"
     from_port   = var.app_port
     to_port     = var.app_port
-    protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
   }
 
   egress {
+    protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
-    Name = "${var.project_name}-ecs-sg"
+    Name        = "${var.project_name}-ecs-tasks-sg"
+    Environment = var.environment
   }
 }
 
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "app" {
-  name              = "/ecs/${var.project_name}-app"
-  retention_in_days = 7
+  name              = "/ecs/${var.project_name}"
+  retention_in_days = 30
 
   tags = {
-    Name = "${var.project_name}-log-group"
+    Name        = "${var.project_name}-logs"
+    Environment = var.environment
   }
+}
+
+# IAM Role Policy Attachment for ECS Task Execution
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
+  role       = var.ecs_execution_role_arn
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
