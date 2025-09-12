@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps CI/CD Pipeline - Complete Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .pipeline-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .pipeline-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .pipeline-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .pipeline-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .pipeline-step {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pipeline-step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .pipeline-step:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .step-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .step-description {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #667eea;
+            margin: 0 10px;
+            animation: pulse 2s infinite;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .tech-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .tech-card:hover {
+            transform: scale(1.05);
+        }
+
+        .tech-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .tech-card p {
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            opacity: 0.8;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .pipeline-flow {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 DevOps CI/CD Pipeline</h1>
+            <p>Complete Integration with Docker, Terraform, GitHub Actions & AWS</p>
+        </div>
+
+        <div class="pipeline-container">
+            <h2 class="pipeline-title">Welcome to Complete CI/CD Integration</h2>
+            
+            <div class="pipeline-flow">
+                <div class="pipeline-step">
+                    <span class="step-icon">📝</span>
+                    <div class="step-title">Code</div>
+                    <div class="step-description">Node.js Microservice with Express.js framework</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="pipeline-step">
+                    <span class="step-icon">🐳</span>
+                    <div class="step-title">Docker</div>
+                    <div class="step-description">Multi-stage containerization with Alpine Linux</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="pipeline-step">
+                    <span class="step-icon">⚡</span>
+                    <div class="step-title">GitHub Actions</div>
+                    <div class="step-description">Automated CI/CD pipeline with build, test & deploy</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="pipeline-step">
+                    <span class="step-icon">🏗️</span>
+                    <div class="step-title">Terraform</div>
+                    <div class="step-description">Infrastructure as Code for AWS resources</div>
+                </div>
+                
+                <div class="arrow">→</div>
+                
+                <div class="pipeline-step">
+                    <span class="step-icon">☁️</span>
+                    <div class="step-title">AWS</div>
+                    <div class="step-description">ECS, ECR, VPC, CloudWatch deployment</div>
+                </div>
+            </div>
+
+            <div class="tech-stack">
+                <div class="tech-card">
+                    <h3>🐳 Docker</h3>
+                    <p>Containerization with multi-stage builds, security best practices, and health checks</p>
+                </div>
+                
+                <div class="tech-card">
+                    <h3>⚡ GitHub Actions</h3>
+                    <p>Automated CI/CD with build, test, security scanning, and multi-environment deployment</p>
+                </div>
+                
+                <div class="tech-card">
+                    <h3>🏗️ Terraform</h3>
+                    <p>Infrastructure as Code managing VPC, ECS, ECR, IAM roles, and CloudWatch</p>
+                </div>
+                
+                <div class="tech-card">
+                    <h3>☁️ AWS</h3>
+                    <p>Cloud infrastructure with ECS Fargate, ECR registry, and automated scaling</p>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <div class="status-badge">✅ Pipeline Status: ACTIVE</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🎯 DevOps Automation Project | Built with Modern CI/CD Practices</p>
+            <p>Repository: <a href="https://github.com/dharaneesh-2005/devops-imp" style="color: #fff; text-decoration: underline;">github.com/dharaneesh-2005/devops-imp</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate pipeline steps on scroll
+            const steps = document.querySelectorAll('.pipeline-step');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                    }
+                });
+            });
+
+            steps.forEach(step => observer.observe(step));
+
+            // Add click effects to tech cards
+            const techCards = document.querySelectorAll('.tech-card');
+            techCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1.05)';
+                    }, 150);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
