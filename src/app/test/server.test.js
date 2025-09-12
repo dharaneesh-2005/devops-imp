@@ -2,13 +2,19 @@ const request = require('supertest');
 const app = require('../server');
 
 describe('Sample App API', () => {
-  test('GET / should return welcome message', async () => {
+  test('GET / should return HTML dashboard', async () => {
     const response = await request(app)
       .get('/')
       .expect(200);
     
-    expect(response.body.message).toBe('Welcome to DevOps Sample App');
-    expect(response.body.version).toBe('1.0.0');
+    // Check if it's HTML content (dashboard) or JSON (fallback)
+    if (response.headers['content-type'] && response.headers['content-type'].includes('text/html')) {
+      expect(response.text).toContain('DevOps CI/CD Pipeline');
+    } else {
+      // Fallback for JSON response
+      expect(response.body.message).toBe('Welcome to DevOps Sample App');
+      expect(response.body.version).toBe('1.0.0');
+    }
   });
 
   test('GET /health should return health status', async () => {

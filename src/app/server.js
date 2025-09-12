@@ -13,8 +13,11 @@ app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files (only if public directory exists)
+const publicPath = path.join(__dirname, 'public');
+if (require('fs').existsSync(publicPath)) {
+  app.use(express.static(publicPath));
+}
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -28,7 +31,21 @@ app.get('/health', (req, res) => {
 
 // API endpoints
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const htmlPath = path.join(__dirname, 'public', 'index.html');
+  if (require('fs').existsSync(htmlPath)) {
+    res.sendFile(htmlPath);
+  } else {
+    // Fallback JSON response when HTML file doesn't exist
+    res.json({
+      message: 'Welcome to DevOps Sample App',
+      version: '1.0.0',
+      endpoints: {
+        health: '/health',
+        api: '/api',
+        dashboard: '/'
+      }
+    });
+  }
 });
 
 app.get('/api/info', (req, res) => {

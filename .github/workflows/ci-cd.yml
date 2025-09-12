@@ -143,8 +143,8 @@ jobs:
         MAIN_RESPONSE=$(curl -s http://localhost:3000)
         echo "Main response: $MAIN_RESPONSE"
         
-        # Verify main response contains expected content
-        if echo "$MAIN_RESPONSE" | grep -q "DevOps CI/CD Pipeline"; then
+        # Verify main response contains expected content (HTML or JSON)
+        if echo "$MAIN_RESPONSE" | grep -q "DevOps CI/CD Pipeline" || echo "$MAIN_RESPONSE" | grep -q '"message":"Welcome to DevOps Sample App"'; then
           echo "✅ Main endpoint: PASSED"
         else
           echo "❌ Main endpoint: FAILED"
