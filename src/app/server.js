@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,9 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
+
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -24,12 +28,17 @@ app.get('/health', (req, res) => {
 
 // API endpoints
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/api/info', (req, res) => {
   res.json({
     message: 'Welcome to DevOps Sample App',
     version: '1.0.0',
     endpoints: {
       health: '/health',
-      api: '/api'
+      api: '/api',
+      dashboard: '/'
     }
   });
 });
