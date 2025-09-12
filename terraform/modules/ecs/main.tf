@@ -114,7 +114,7 @@ resource "aws_ecs_service" "app" {
     container_port   = var.app_port
   }
 
-  depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role]
+  # depends_on is handled in the main module
 
   tags = {
     Name        = "${var.project_name}-service"
@@ -158,8 +158,4 @@ resource "aws_cloudwatch_log_group" "app" {
   }
 }
 
-# IAM Role Policy Attachment for ECS Task Execution
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
-  role       = var.ecs_execution_role_arn
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
+# IAM Role Policy Attachment is handled in the main module

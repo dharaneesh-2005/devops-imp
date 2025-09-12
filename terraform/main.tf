@@ -26,10 +26,6 @@ provider "aws" {
 }
 
 # Data sources
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
 data "aws_caller_identity" "current" {}
 
 # VPC Module
@@ -40,7 +36,7 @@ module "vpc" {
   vpc_cidr            = var.vpc_cidr
   public_subnet_cidrs = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
-  availability_zones  = data.aws_availability_zones.available.names
+  availability_zones  = ["ap-south-1a", "ap-south-1b"]  # Hardcoded for ap-south-1 region
 }
 
 # ALB Module
