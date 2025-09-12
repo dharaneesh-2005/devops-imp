@@ -47,6 +47,12 @@ jobs:
 
     - name: Build Docker image
       run: |
+        # Debug: Show what's in the build context
+        echo "=== DEBUG: Build context contents ==="
+        ls -la src/app/
+        echo "=== DEBUG: Public directory ==="
+        ls -la src/app/public/ 2>/dev/null || echo "Public directory not found in build context"
+        # Build with explicit context
         docker build -f docker/Dockerfile -t $ECR_REPOSITORY:$GITHUB_SHA src/app
 
     - name: Test Docker image locally
@@ -313,6 +319,12 @@ jobs:
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
+        # Debug: Show what's in the build context
+        echo "=== DEBUG: Build context contents ==="
+        ls -la src/app/
+        echo "=== DEBUG: Public directory ==="
+        ls -la src/app/public/ 2>/dev/null || echo "Public directory not found in build context"
+        # Build with explicit context
         docker build -f docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/app
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:dev-latest
@@ -394,6 +406,12 @@ jobs:
       env:
         IMAGE_TAG: ${{ github.sha }}
       run: |
+        # Debug: Show what's in the build context
+        echo "=== DEBUG: Build context contents ==="
+        ls -la src/app/
+        echo "=== DEBUG: Public directory ==="
+        ls -la src/app/public/ 2>/dev/null || echo "Public directory not found in build context"
+        # Build with explicit context
         docker build -f docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/app
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
