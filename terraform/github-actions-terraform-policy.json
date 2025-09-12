@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:*",
+        "ecs:*",
+        "ecr:*",
+        "iam:*",
+        "logs:*",
+        "elasticloadbalancing:*",
+        "s3:*",
+        "dynamodb:*",
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
